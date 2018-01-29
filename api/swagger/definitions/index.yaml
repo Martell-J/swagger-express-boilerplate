@@ -1,0 +1,10 @@
+# RESPONSES
+SuccessResponse:
+  $ref: ./responses/successresponse.yaml
+ErrorResponse:
+  $ref: ./responses/errorresponse.yaml
+
+# COMMON
+BodyObject:
+  description: default model for body data sent as JSON
+  type: object

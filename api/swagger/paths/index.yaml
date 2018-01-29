@@ -1,0 +1,22 @@
+
+#TESTING
+/testqueries:
+  x-swagger-router-controller: test
+  get:
+    description: Tests all of the code at the specified method
+    operationId: testFunction
+    responses:
+      "200":
+        description: Success
+        schema:
+          # a pointer to a definition
+          $ref: "#/definitions/SuccessResponse"
+      # responses may fall through to errors
+      default:
+        description: Error
+        schema:
+          $ref: "#/definitions/ErrorResponse"
+
+# EXAMPLE - Authentication
+# /login:
+  # $ref: ./auth/login.yaml

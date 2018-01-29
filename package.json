@@ -1,0 +1,53 @@
+{
+  "name": "swagger-boilerplate-api",
+  "version": "0.0.1",
+  "private": true,
+  "author": "Johnathan Martell",
+  "contributors": [
+    {
+      "name": "Scott Rocha",
+      "email": "s.rocha@pc-serv.ca"
+    }
+  ],
+  "repository": {
+    "type": "git"
+  },
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "local": "node ./node_modules/cross-env/dist/bin/cross-env NODE_ENV=local-generic node app.js",
+    "local-debug": "node ./node_modules/cross-env/dist/bin/cross-env NODE_ENV=local-debug node app.js",
+    "test": "swagger project test",
+    "lint": "eslint api handlers mock persist sequelize test app.js --quiet",
+    "sequelize": "node ./node_modules/.bin/sequelize"
+  },
+  "engines": {
+    "node": ">=8.9.1"
+  },
+  "dependencies": {
+    "axios": "0.17.1",
+    "bluebird": "3.5.1",
+    "config": "1.29.2",
+    "continuation-local-storage": "3.2.1",
+    "cors": "2.8.4",
+    "cross-env": "5.1.3",
+    "express": "4.16.2",
+    "helmet": "3.10.0",
+    "http-auth": "3.2.3",
+    "js-yaml": "3.10.0",
+    "json-refs": "3.0.3",
+    "jsonwebtoken": "8.1.1",
+    "moment": "2.20.1",
+    "morgan": "1.9.0",
+    "mysql2": "1.5.1",
+    "secure-route": "3.0.1",
+    "sequelize": "4.32.1",
+    "sequelize-cli": "3.2.0",
+    "swagger-express-mw": "0.7.0",
+    "swagger-ui-express": "2.0.14",
+    "winston": "2.4.0"
+  },
+  "devDependencies": {
+    "eslint": "4.16.0"
+  }
+}
