@@ -19,10 +19,13 @@ module.exports = {
 
     // tie in the Operators object explicitly to each config object
     connection.sequelize.options.operatorsAliases = Sequelize.Op;
+
+    // Define the directory for each model definition
     const modelDir = path.join(__dirname, "/definitions");
     let db = {};
     let sequelize = null;
 
+    // Use the environment variable if specified on the compiled config file
     if (config.use_env_variable) {
 
       // eslint-disable-next-line no-process-env
@@ -35,63 +38,71 @@ module.exports = {
     }
 
     // Custom model definitions for our current setup.
-    // This automation will drastically change if DB case changes
     const getModelDefinitions = () => {
 
       return new Promise((reslv) => {
 
+        // Go through each definition
         const files = fs.readdirSync(modelDir)
           .filter((file) => {
 
+            // Find files not named index, of type javascript
             return file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js";
 
           });
 
-          if (files.length === 0) {
+        // If we don't have any files, none are defined.
+        if (files.length === 0) {
 
-            return reslv(db);
+          return reslv(db);
+
+        }
+
+        // Import the file by joining the model directory and the filename into Sequelize
+        files.forEach((file, i, array) => {
+
+          let model = sequelize.import(path.join(modelDir, file));
+
+          const keyName = model.options.keyName;
+
+          // If a keyname is specified, use it
+          if (keyName) {
+
+            db[keyName] = model;
+
+          } else {
+
+            // Otherwise, capitalize the first letter of the definition, and use that key
+            db[model.name.charAt(0).toUpperCase() + model.name.slice(1)] = model;
 
           }
 
-          files.forEach((file, i, array) => {
+          // If we're at the end of the array...
+          if (i === array.length - 1) {
 
-            let model = sequelize.import(path.join(modelDir, file));
+            // go through every object
+            Object.keys(db).forEach((modelName, idx, arr) => {
 
-            const keyName = model.options.keyName;
+              // Check if there's an associate attribute tied to the sequelize model, if so.
+              // execute it and pass all models. (Should auto-associate the correct models)
+              if (db[modelName].associate) {
 
-            // If a keyname is specified, use it
-            if (keyName) {
+                db[modelName].associate(db);
 
-              db[keyName] = model;
+              }
 
-            } else {
+              // if we're at the end of the array, end the process
+              if (idx === arr.length - 1) {
 
-              // Otherwise, capitalize the first letter of the definition, and use that key
-              db[model.name.charAt(0).toUpperCase() + model.name.slice(1)] = model;
+                reslv(db);
 
-            }
+              }
 
-            if (i === array.length - 1) {
+            });
 
-              Object.keys(db).forEach((modelName, idx, arr) => {
+          }
 
-                if (db[modelName].associate) {
-
-                  db[modelName].associate(db);
-
-                }
-
-                if (idx === arr.length - 1) {
-
-                  reslv(db);
-
-                }
-
-              });
-
-            }
-
-          });
+        });
 
       });
 
@@ -102,11 +113,12 @@ module.exports = {
       return getModelDefinitions()
         .then((models) => {
 
+          // If we have all of the models, just tie in the connection model, and the assets object
           if (Object.keys(db).length === 0) {
 
             app.models = { sequelize, Sequelize };
 
-            app.logger.info("Empty Sequelize Instance Initialized!")
+            app.logger.info("Empty Sequelize Instance Initialized!");
 
             return resolve(app);
 
@@ -116,12 +128,14 @@ module.exports = {
           require("./relations/index")(models)
             .then((modelsWithRelations) => {
 
+              // Tie in all relations, then append the sequelize connection model/object to the models
+              // object
               modelsWithRelations.sequelize = sequelize;
               modelsWithRelations.Sequelize = Sequelize;
 
               app.models = modelsWithRelations;
 
-              app.logger.info("Sequelize Instance Initialized!")
+              app.logger.info("Sequelize Instance Initialized!");
 
               return resolve(app);
 

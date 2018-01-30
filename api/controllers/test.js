@@ -3,14 +3,17 @@
 
 // Put the test for each models and their relational data here...i guess
 const localModels = require("../../app").models;
-const { Op } = require("sequelize");
+
+// const { Op } = require("sequelize");
 const Promise = require("bluebird");
 
 const endPoints = {
 
+  /*
   "singleORMQuery": (req, res) => {
 
   },
+  */
 
   "testFunction": (req, res) => {
 

@@ -1,8 +1,5 @@
 "use strict";
 
-const Axios = require("axios");
-const crypto = require("crypto");
-
 module.exports = {
 
   "initializeSwaggerClient": (app) => {
@@ -22,6 +19,8 @@ module.exports = {
 
     };
 
+    // Create the swagger-ui with the given parameters for the API in the resolved config file,
+    // and authorize the user before allowing them to access the resource
     const basic = auth.basic({ "realm": "swagger-ui", "skipUser": true }, (username, password, callback) =>
       authUser(username, password, callback));
 
@@ -59,7 +58,7 @@ module.exports = {
             return callback();
 
             // Otherwise, just don't!
-            return callback(new Error("Access Denied!"));
+            // return callback(new Error("Access Denied!"));
 
           },
           "Authentication": (req, res, callback) => {
@@ -87,10 +86,13 @@ module.exports = {
 
           app.use("/", (req, res, next) => {
 
+            // Slice off any query parameters from the url
             const url = ~req.url.indexOf("?") ? req.url.slice(0, req.url.indexOf("?")) : req.url;
 
+            // Get the relative path of the route given the url
             const pathSpec = swaggerExpress.runner.getPath(url);
 
+            // If the path exists, log the details of it (Path, Controller, Operation, TimeStamp)
             if (pathSpec) {
 
               app.logger.info("Request details:\n\t"
@@ -132,6 +134,7 @@ module.exports = {
               });
 
               // If the error isn't fitting the errorresponse definition...(This is 99% of the time, a swagger validation error)
+
             } else if (!swmwErr.hasOwnProperty("code" && !swmwErr.hasOwnProperty("message"))) {
 
               return res.status(400).json({
@@ -142,8 +145,6 @@ module.exports = {
             }
 
           }
-
-          console.log("No errors yet.")
 
           return next(swmwErr);
 

@@ -12,6 +12,7 @@ module.exports = {
 
         new Promise((reslv) => {
 
+          // Check if the file doesnt exist
           if (!fs.existsSync(dir)) {
 
             if (typeof data === "object") {
@@ -24,8 +25,10 @@ module.exports = {
 
               return new Promise((res) => {
 
+                // Create the directory (will ignore existing directory)
                 fs.mkdir(dir, () => {
 
+                  // Write the file (create it)
                   fs.writeFile(dir + "/" + file, data ? data : "", { "flag": "a+" }, (err) => {
 
                     if (err) {
@@ -33,8 +36,6 @@ module.exports = {
                       throw new Error(err);
 
                     }
-
-                    // TODO: same
 
                     return res();
 
