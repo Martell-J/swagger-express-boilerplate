@@ -78,6 +78,8 @@ const initializePreServerOps = () => {
 
     });
 
+    console.info("Pre-server ops complete.");
+
     resolve(app);
 
   });

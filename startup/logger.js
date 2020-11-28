@@ -1,14 +1,28 @@
 "use strict";
 
 const winston = require("winston");
-winston.emitErrs = true;
+const { format } = winston;
 
 module.exports = {
   "initializeLogger": (app) => {
 
     return new Promise((resolve) => {
 
-      const logger = new winston.Logger({
+      const consoleFormatter = format.printf(info => {
+        return `${info.timestamp} ${info.label} ${info.level}: ${info.message}`;
+      });
+
+      const logger = new winston.createLogger({
+        "level": "info",
+        "format": format.combine(
+          format.json(),
+          format.colorize(),
+          format.label({ label: '[app-server]' }),
+          format.timestamp(),
+          format.splat(),
+          consoleFormatter
+        ),
+        "defaultMeta": {"app": "swagger-express-boilerplate"},
         "transports": [
           new winston.transports.File({
             "name": "info",
@@ -44,17 +58,15 @@ module.exports = {
             "colorize": true,
           }),
           new winston.transports.Console({
-            "level": "debug",
-            "humanReadableUnhandledException": true,
-            "handleExceptions": true,
-            "json": false,
-            "colorize": true,
+            "level": "debug"
           }),
         ],
         "exitOnError": false,
       });
 
-      logger.debug("Overriding \"Express\" logger");
+      console.log("Initializing logger");
+
+      logger.debug(`Overriding "Express" logger`);
 
       const stream = {
         "write"(message) {
@@ -67,8 +79,9 @@ module.exports = {
       app.use(require("morgan")("combined", { stream }));
 
       app.logger = logger;
-
-      resolve(app);
+      
+      logger.debug("Logger initialized.");
+      return resolve(app);
 
     });
 

@@ -57,7 +57,10 @@ module.exports = {
         });
 
       return checkOrCreateFile("./logs", "all-logs.log")
-        .then(() => resolve(app));
+        .then(() => {
+          console.info("File-ops complete.");
+          return resolve(app);
+        });
 
     });
 
