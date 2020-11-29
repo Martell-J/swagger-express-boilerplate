@@ -1,5 +1,9 @@
 "use strict";
 
+
+const auth = require("http-auth");
+const authConnect = require("http-auth-connect");
+
 module.exports = {
 
   "initializeSwaggerClient": (app) => {
@@ -9,13 +13,11 @@ module.exports = {
     const SwaggerExpress = require("swagger-express-mw");
     const swaggerUi = require("swagger-ui-express");
 
-    const auth = require("http-auth");
-
-    const { secret } = require("config");
+    const { ENV, SWUI_USERNAME, SWUI_PASSWORD } = process.env;
 
     const authUser = (username, password, callback) => {
 
-      callback(username === secret.swagger_ui.username && password === secret.swagger_ui.password);
+      callback(username === SWUI_USERNAME && password === SWUI_PASSWORD);
 
     };
 
@@ -35,16 +37,13 @@ module.exports = {
 
     });
 
-    const authRequest = () =>
-      auth.connect(basic);
-
     const cors = require("cors");
     const path = require("path");
 
     return new Promise((resolve) => {
 
       // Authorize before accessing the basepath, when the path is '/ui' explicitly
-      app.use("/ui", authRequest());
+      app.use("/ui", authConnect(basic));
 
       const swaggerConfig = {
         "appRoot": path.join(__dirname, "../"),

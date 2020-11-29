@@ -1184,6 +1184,11 @@ helmet@4.2.0:
   resolved "https://registry.yarnpkg.com/helmet/-/helmet-4.2.0.tgz#e81f5613cc1c90402af581794dc9878ad078b237"
   integrity sha512-aoiSxXMd0ks1ojYpSCFoCRzgv4rY/uB9jKStaw8PkXwsdLYa/Gq+Nc5l0soH0cwBIsLAlujPnx4HLQs+LaXCrQ==
 
+http-auth-connect@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/http-auth-connect/-/http-auth-connect-1.0.4.tgz#c5826ac95a5e6f1b5a001bf2274046296de04724"
+  integrity sha512-W/LE15e3w3PrlgUr0fGG6RonTPV0OuEptdXQGhDfyM3tcvoV9KQXqV0D3+JLkBNXo5DskSNLGfuHijSgLCgbFA==
+
 http-auth@4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/http-auth/-/http-auth-4.1.2.tgz#4d5f5779d4b8abee24ffd3c5ee8ed4259d283001"

@@ -4,8 +4,6 @@ const fs = require("fs");
 const Promise = require("bluebird");
 const path = require("path");
 
-// Tie in CLS-
-
 const namespace = require("continuation-local-storage").createNamespace("seq-api-session");
 const Sequelize = require("sequelize");
 Sequelize.useCLS(namespace);
@@ -14,11 +12,17 @@ module.exports = {
   "initializeSequelizeDatabase": (app) => {
 
     const basename = path.basename(module.filename);
-    const config = require("config");
-    const { connection } = config;
 
-    // tie in the Operators object explicitly to each config object
-    connection.sequelize.options.operatorsAliases = Sequelize.Op;
+    const {
+      ENV,
+      DEBUG,
+      SEQ_IS_FRESH,
+      SEQ_USERNAME,
+      SEQ_PASSWORD,
+      SEQ_DATABASE,
+      SEQ_HOST
+    } = process.env;
+
 
     // Define the directory for each model definition
     const modelDir = path.join(__dirname, "/definitions");
@@ -26,16 +30,50 @@ module.exports = {
     let sequelize = null;
 
     // Use the environment variable if specified on the compiled config file
-    if (config.use_env_variable) {
+    sequelize = new Sequelize(
+      SEQ_DATABASE,
+      SEQ_USERNAME,
+      SEQ_PASSWORD,
+      {
+        host: SEQ_HOST,
+        port: "3306",
+        dialect: "mysql",
+        logging: ((DEBUG && DEBUG === 'true') || ENV !== "production"),
+        encrypt: true,
+        operatorsAliases: Sequelize.Op,
+        dialectOptions: {
+          multipleStatements: true,
+          
+        }
+      }
+    );
 
-      // eslint-disable-next-line no-process-env
-      sequelize = new Sequelize(process.env[config.use_env_variable]);
+    const handleShouldSync = (models) =>
+      new Promise((resolve) => {
 
-    } else {
+        if (SEQ_IS_FRESH === 'true') {
 
-      sequelize = new Sequelize(connection.sequelize.database, connection.sequelize.username, connection.sequelize.password, connection.sequelize.options);
+          const syncProms = [];
 
-    }
+          Object.keys(models)
+            .sort((aKey, bKey) => models[aKey].syncOrder - models[bKey].syncOrder)
+            .forEach((key) => {
+
+              syncProms.push(() => models[key].sync());
+
+            });
+
+
+          return Promise.each(syncProms, pf => pf(), { concurrency: 1 })
+            .then(resolve);
+
+        } else {
+  
+          return resolve(models);
+  
+        }
+
+      })
 
     // Custom model definitions for our current setup.
     const getModelDefinitions = () => {
@@ -61,7 +99,7 @@ module.exports = {
         // Import the file by joining the model directory and the filename into Sequelize
         files.forEach((file, i, array) => {
 
-          let model = sequelize.import(path.join(modelDir, file));
+          let model = require(path.join(modelDir, file))(sequelize, Sequelize);
 
           const keyName = model.options.keyName;
 
@@ -126,6 +164,7 @@ module.exports = {
 
           // Tie the relationships in before processing
           require("./relations/index")(models)
+            .then(handleShouldSync)
             .then((modelsWithRelations) => {
 
               // Tie in all relations, then append the sequelize connection model/object to the models
@@ -133,7 +172,9 @@ module.exports = {
               modelsWithRelations.sequelize = sequelize;
               modelsWithRelations.Sequelize = Sequelize;
 
-              app.models = modelsWithRelations;
+              
+
+              app.models = modelsWithRelations.sequelize.models;
 
               app.logger.info("Sequelize Instance Initialized!");
 
@@ -144,7 +185,7 @@ module.exports = {
         })
         .catch((err) => {
 
-          app.logger.info(err);
+          app.logger.error(err);
 
         });
 

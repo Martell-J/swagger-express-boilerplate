@@ -3,7 +3,9 @@ logs/*
 *.log
 npm-debug.log*
 
-.env
+#Ignore all env files except for .env.example
+.env*
+!.env.example
 
 
 # Runtime data

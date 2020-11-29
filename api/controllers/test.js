@@ -4,6 +4,8 @@
 // Put the test for each models and their relational data here...i guess
 const localModels = require("../../app").models;
 
+console.log(localModels);
+
 // const { Op } = require("sequelize");
 const Promise = require("bluebird");
 
@@ -21,13 +23,9 @@ const endPoints = {
 
       return new Promise((resolve) => {
 
-        localModels.TESTMODEL.findAll().then((results) => {
+        localModels.Test.findAll().then((results) => {
 
-          return resolve(_.map(results, (result) => {
-
-            return JSON.parse(JSON.stringify(result.get()));
-
-          }));
+          return resolve(results);
 
         }).catch((err) => {
 
@@ -51,6 +49,8 @@ const endPoints = {
 
     }).catch((err) => {
 
+      console.error(err);
+
       return res.send(JSON.stringify({
         "message": "Test failed - Review code",
         "result": err,
@@ -65,9 +65,9 @@ const endPoints = {
 // Only export these routes if we're on local
 const checkDevDependence = () => {
 
-  const { env, debug } = require("../../app");
+  const { ENV, DEBUG } = process.env;
 
-  if (env !== "local" && debug === false) {
+  if (ENV !== "local" && DEBUG === false) {
 
     // Return points with no codebase.
     Object.keys(endPoints).map((key) => {
