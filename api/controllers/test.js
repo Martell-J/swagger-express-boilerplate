@@ -4,8 +4,6 @@
 // Put the test for each models and their relational data here...i guess
 const localModels = require("../../app").models;
 
-console.log(localModels);
-
 // const { Op } = require("sequelize");
 const Promise = require("bluebird");
 
